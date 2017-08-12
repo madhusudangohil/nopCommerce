@@ -1782,5 +1782,13 @@ namespace Nop.Web.Controllers
             return View(model);
         }
         #endregion
+
+
+        public IActionResult MiniShoppingCart()
+        {
+            var model = _shoppingCartModelFactory.PrepareMiniShoppingCartModel();
+            return Ok(model);
+        }
+
     }
 }

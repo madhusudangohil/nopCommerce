@@ -23,6 +23,7 @@ using Nop.Web.Framework.Security;
 using Nop.Web.Framework.Security.Captcha;
 using Nop.Web.Framework.Themes;
 using Nop.Web.Models.Common;
+using System.Linq;
 
 namespace Nop.Web.Controllers
 {
@@ -42,7 +43,9 @@ namespace Nop.Web.Controllers
         private readonly IVendorService _vendorService;
         private readonly IWorkflowMessageService _workflowMessageService;
         private readonly ILogger _logger;
-        
+        private readonly IWidgetModelFactory _widgetModelFactory;
+
+
         private readonly StoreInformationSettings _storeInformationSettings;
         private readonly CommonSettings _commonSettings;
         private readonly LocalizationSettings _localizationSettings;
@@ -54,6 +57,7 @@ namespace Nop.Web.Controllers
         #region Constructors
 
         public CommonController(ICommonModelFactory commonModelFactory,
+            IWidgetModelFactory widgetModelFactory,
             ILanguageService languageService,
             ICurrencyService currencyService,
             ILocalizationService localizationService,
@@ -88,6 +92,7 @@ namespace Nop.Web.Controllers
             this._localizationSettings = localizationSettings;
             this._captchaSettings = captchaSettings;
             this._vendorSettings = vendorSettings;
+            this._widgetModelFactory = widgetModelFactory;
         }
 
         #endregion
@@ -388,6 +393,47 @@ namespace Nop.Web.Controllers
                 return RedirectPermanent(url);
             else
                 return Redirect(url);
+        }
+
+        public virtual IActionResult Footer()
+        {
+            var model = _commonModelFactory.PrepareFooterModel();
+
+            return Ok(model);
+        }
+
+        public virtual IActionResult HeaderLinks()
+        {
+            var model = _commonModelFactory.PrepareHeaderLinksModel();
+            return Ok(model);
+        }
+
+        [HttpGet]       
+        public IActionResult Widget([FromQuery]string widgetZone, object additionalData = null)
+        {
+            var model = _widgetModelFactory.PrepareRenderWidgetModel(widgetZone, additionalData);
+
+            //no data?
+            if (!model.Any())
+                return Content("");
+
+            return Ok(model);
+        }
+
+        [HttpGet]
+        public IActionResult Currencies()
+        {
+            var model = _commonModelFactory.PrepareCurrencySelectorModel();
+            if (model.AvailableCurrencies.Count == 1)
+                Content("");
+
+            return Ok(model);
+        }
+
+        public IActionResult Logo()
+        {
+            var model = _commonModelFactory.PrepareLogoModel();
+            return Ok(model);
         }
 
         #endregion
